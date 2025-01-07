@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codenames: 3 Teams</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #setup {
+      margin: 20px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    .card {
+      width: 100px;
+      height: 50px;
+      background-color: lightgray;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .card.revealed {
+      cursor: default;
+      background-color: white;
+    }
+
+    .card.red { background-color: red; color: white; }
+    .card.blue { background-color: blue; color: white; }
+    .card.green { background-color: green; color: white; }
+    .card.beige { background-color: beige; color: black; }
+    .card.bomb { background-color: black; color: white; }
+
+    #spymaster-controls {
+      margin-top: 20px;
+    }
+
+    #turn-controls {
+      margin-top: 20px;
+    }
+      /* Flashing and dimming effect for incorrect guesses */
+  .flash-dim {
+    animation: flash-dim 1s forwards;
+  }
+
+  @keyframes flash-dim {
+    0% {
+      background-color: lightgray; /* Start with the normal background */
+    }
+    50% {
+      background-color: red; /* Flash with red */
+      opacity: 0.5; /* Dim the card */
+    }
+    100% {
+      background-color: lightgray; /* Return to the normal background */
+      opacity: 1; /* Fully opaque */
+    }
+    
+  }
+  body.red-turn {
+  background-color: #D32F2F; /* Red */
+}
+
+body.blue-turn {
+  background-color: #2196F3; /* Blue */
+}
+
+body.green-turn {
+  background-color: #4CAF50; /* Green */
+}
+body.bomb-turn {
+  background-color: black;
+  color: white; /* Change text color to white for readability */
+}
+
+  </style>
+</head>
+<body>
+  <h1>Codenames: 3 Teams</h1>
+  <div id="setup">
+    <label>Enter Words (comma-separated):</label><br>
+    <textarea id="words-input" rows="4" cols="50"></textarea><br><br>
+    <!-- <label>Enter Team Members (comma-separated):</label><br>
+    <textarea id="team-members" rows="4" cols="50"></textarea><br><br> -->
+    <button id="start-game">Start Game</button>
+  </div>
+  <div id="game-board" style="display: none;">
+    <h3 id="turn-info"></h3>
+    <div id="board"></div>
+    <div id="win-message" style="display: none; padding: 20px; background-color: #4CAF50; color: white; font-size: 24px; border-radius: 10px; margin-top: 20px;">
+        <span id="winner-text"></span>
+      </div>
+    <div id="spymaster-controls">
+      <button id="reveal-board">Reveal Board (Spymaster)</button>
+      <button id="hide-board" style="display: none;">Hide Board</button>
+    </div>
+    <div id="turn-controls">
+      <input type="text" id="hint" placeholder="Spymaster's hint">
+      <input type="number" id="num-words" placeholder="Number of words">
+      <button id="submit-hint">Submit Hint</button>
+      <button id="end-guess" style="display: none;">End Guess</button>
+
+    </div>
+    <div id="hint-display" style="margin-top: 20px; font-weight: bold;"></div>
+
+  </div>
+  <div id="remaining-words">
+    <h3>Remaining Words:</h3>
+    <p id="red-remaining">Red: 8</p>
+    <p id="blue-remaining">Blue: 8</p>
+    <p id="green-remaining">Green: 8</p>
+  </div>
+
+  
+  <script>
+    const setupDiv = document.getElementById('setup');
+    const gameBoardDiv = document.getElementById('game-board');
+    const boardDiv = document.getElementById('board');
+    const turnInfo = document.getElementById('turn-info');
+    const revealBoardBtn = document.getElementById('reveal-board');
+    const hideBoardBtn = document.getElementById('hide-board');
+    const hintInput = document.getElementById('hint');
+    const numWordsInput = document.getElementById('num-words');
+    const submitHintBtn = document.getElementById('submit-hint');
+    const endGuessBtn = document.getElementById('end-guess')
+
+    let words = [];
+    let assignments = {};
+    let currentTeam = 0; // 0 = Red, 1 = Blue, 2 = Green
+    const teams = ['Red', 'Blue', 'Green'];
+    let currentHint = '';
+    let currentNumWords = 0;
+
+    let hintGiven = false; // Track if the hint has been provided
+    let guessesLeft = 0; // Track guesses remaining for the current turn
+    let redRemaining = 8;  // 8 words for red team
+let blueRemaining = 8;  // 8 words for blue team
+let greenRemaining = 8;  // 8 words for green team
+
+// Function to update remaining words count
+function updateRemainingWords() {
+  document.getElementById('red-remaining').innerText = `Red: ${redRemaining}`;
+  document.getElementById('blue-remaining').innerText = `Blue: ${blueRemaining}`;
+  document.getElementById('green-remaining').innerText = `Green: ${greenRemaining}`;
+
+  // Check if any team has won
+  if (redRemaining === 0) {
+    displayWinner('Red');
+  } else if (blueRemaining === 0) {
+    displayWinner('Blue');
+  } else if (greenRemaining === 0) {
+    displayWinner('Green');
+  }
+}
+function displayWinner(winningTeam,bomb=false) {
+  const winMessage = document.getElementById('win-message');
+  const winnerText = document.getElementById('winner-text');
+if(bomb){
+    console.log(winningTeam)
+     // Determine the other two teams that win
+     const winningTeams = teams.filter(team => team !== winningTeam).join(' &');
+winnerText.innerText = `${winningTeams} team(s) win! The bomb was revealed by ${winningTeam} team.`;
+winMessage.style.display = 'block'; // Show the win message
+
+}
+  else{
+    winnerText.innerText = `${winningTeam} team wins! All words have been guessed.`;
+  winMessage.style.display = 'block'; // Show the win message
+  }
+
+  // Disable further interaction by hiding the game or disabling clicks
+  boardDiv.style.pointerEvents = 'none'; // Disables further guesses
+
+  disableBoard()
+}
+
+// Function to handle word guesses
+function handleGuess(card) {
+  const color = card.dataset.color;
+
+  if (color === 'red') {
+    redRemaining--;
+  } else if (color === 'blue') {
+    blueRemaining--;
+  } else if (color === 'green') {
+    greenRemaining--;
+  }
+
+  // Update the remaining words display
+  updateRemainingWords();
+}
+// Adding event listener to cards for guessing
+boardDiv.addEventListener('click', (e) => {
+  if (e.target.classList.contains('card')) {
+    handleGuess(e.target);
+  }
+});
+    document.getElementById('start-game').addEventListener('click', () => {
+      words = document.getElementById('words-input').value.split(',').map(w => w.trim());
+    //   const teamMembers = document.getElementById('team-members').value.split(',').map(t => t.trim());
+
+      if (words.length < 37) {
+        alert("Enter at least 37 words.");
+        return;
+      }
+
+      setupGame();
+    });
+
+    function setupGame() {
+      assignments = assignWords(words);
+      renderBoard();
+      setupDiv.style.display = 'none';
+      gameBoardDiv.style.display = 'block';
+      updateTurnInfo();
+      disableBoard()
+
+    }
+
+    function assignWords(words) {
+      const shuffled = [...words].sort(() => Math.random() - 0.5);
+      return {
+        bomb: shuffled[0],
+        red: shuffled.slice(1, 9),
+        blue: shuffled.slice(9, 17),
+        green: shuffled.slice(17, 25),
+        beige: shuffled.slice(25)
+      };
+    }
+
+    function renderBoard() {
+  const allWords = [
+    ...assignments.red.map(w => ({ word: w, color: 'red' })),
+    ...assignments.blue.map(w => ({ word: w, color: 'blue' })),
+    ...assignments.green.map(w => ({ word: w, color: 'green' })),
+    ...assignments.beige.map(w => ({ word: w, color: 'beige' })),
+    { word: assignments.bomb, color: 'bomb' }
+  ].sort(() => Math.random() - 0.5);
+
+  boardDiv.innerHTML = '';
+  disableBoard()
+  allWords.forEach(({ word, color }) => {
+    const card = document.createElement('div');
+    card.className = `card`;
+    card.innerText = word;
+    card.dataset.color = color;
+
+    // Add click event for guessing
+    card.addEventListener('click', () => {
+
+      card.classList.add('revealed', color); // Reveal the card color
+   
+        // Handle turn logic based on the card's color
+      if (color === teams[currentTeam].toLowerCase()) {
+        // Correct guess, continue the turn
+        guessesLeft--;
+        updateTurnInfo(true, guessesLeft)
+        if(guessesLeft === 0){
+        endTurn()
+    }
+
+      } else if (color === 'bomb') {
+        console.log('bomb')
+        disableBoard();
+        // Game-ending scenario
+        displayWinner(teams[currentTeam], true)
+     
+      } else {
+        
+        // Incorrect guess, move to the next team's turn
+        currentTeam = (currentTeam + 1) % 3;
+        endTurn()
+    }
+      
+    });
+
+    boardDiv.appendChild(card);
+  });
+}
+function disableBoard() {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => card.style.pointerEvents = 'none'); // Disable clicks
+}
+function enableBoard() {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => card.style.pointerEvents = 'auto'); // Disable clicks
+}
+
+    revealBoardBtn.addEventListener('click', () => {
+        disableBoard()
+      // Show the colors to the Spymaster
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        const color = card.dataset.color;
+        card.classList.add(color);
+      });
+
+      revealBoardBtn.style.display = 'none';
+      hideBoardBtn.style.display = 'inline';
+    });
+
+    hideBoardBtn.addEventListener('click', () => {
+      // Hide the colors again
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        card.classList.remove('red', 'blue', 'green', 'beige', 'bomb');
+      });
+
+      hideBoardBtn.style.display = 'none';
+      revealBoardBtn.style.display = 'inline';
+    });
+
+
+
+function updateTurnInfo(given, guessesLeft, bomb=false) {
+    hintGiven = given;
+    console.log(hintGiven)
+
+  turnInfo.innerText = hintGiven
+    ? `${teams[currentTeam]}, make your guesses! (${guessesLeft} guesses remaining)`
+    : `It's ${teams[currentTeam]}'s turn! Spymaster, provide your hint.`;
+
+      // Remove any previous background classes
+  document.body.classList.remove('red-turn', 'blue-turn', 'green-turn', 'bomb-turn');
+
+// Add the current team's background class
+if (teams[currentTeam] === 'Red') {
+  document.body.classList.add('red-turn');
+} else if (teams[currentTeam] === 'Blue') {
+  document.body.classList.add('blue-turn');
+} else if (teams[currentTeam] === 'Green') {
+  document.body.classList.add('green-turn');
+} else if(bomb){
+  // If it's the bomb team's turn, set the bomb background
+  document.body.classList.add('bomb-turn');
+}
+}
+
+submitHintBtn.addEventListener('click', () => {
+  currentHint = hintInput.value.trim();
+  currentNumWords = parseInt(numWordsInput.value.trim());
+
+  if (!currentHint || isNaN(currentNumWords) || currentNumWords <= 0) {
+    alert("Please enter a valid hint and number of words.");
+    return;
+  }
+
+  const hintDisplay = document.getElementById('hint-display');
+  hintDisplay.innerText = `Hint: "${currentHint}" for ${currentNumWords} words.`;
+
+  guessesLeft = currentNumWords + 1; // Allow one extra guess
+  hintGiven = true;
+ enableBoard()
+  updateTurnInfo(true, guessesLeft);
+
+  hintInput.value = '';
+  numWordsInput.value = '';
+   // Show the "End Guess" button
+   endGuessBtn.style.display = 'inline';
+});
+
+
+// End Guess button click event
+endGuessBtn.addEventListener('click', () => {
+  endTurn()
+});
+function endTurn() {
+  hintGiven = false;
+  guessesLeft = 0;
+  console.log('currentTeam ', currentTeam)
+  disableBoard()
+
+  currentTeam = (currentTeam + 1) % 3; // Rotate to the next team
+  updateTurnInfo(false, guessesLeft);
+  const hintDisplay = document.getElementById('hint-display');
+  hintDisplay.innerText = ''; // Clear the hint display for the next team
+  
+  // Transition to the spymaster's turn
+  if (currentTeam === 0 || currentTeam === 1 || currentTeam === 2) {
+    // Make sure we give control to the next team
+    hintGiven = false;
+    updateTurnInfo(false, guessesLeft);
+  }
+    // Hide the "End Guess" button after the turn ends
+    endGuessBtn.style.display = 'none';
+}
+
+
+
+  </script>
+</body>
+</html>
