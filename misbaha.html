@@ -1,127 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>أذكار الصباح والمساء</title>
 
 <style>
-body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #000;
-    font-family: 'Arial', sans-serif;
-    overflow: hidden;
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    background:#000;
+    font-family:Tahoma, Arial, sans-serif;
+    padding:15px;
 }
 
 /* SCREEN */
-.screen {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 85%;
-    height: 50%;
-    background: #111;
-    border-radius: 15px;
-    border: 5px solid #00ff00;
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
-    padding: 15px;
-    margin-bottom: 25px;
+.screen{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    width:95%;
+    max-width:500px;
+    height:35vh;
+    background:#111;
+    border-radius:15px;
+    border:5px solid #00ff00;
+    box-shadow:0 0 20px rgba(0,255,0,.7);
+    padding:15px;
+    margin-bottom:25px;
 }
 
 /* COUNTER */
-.counter {
-    font-size: 72px;
-    color: #00ff00;
-    font-family: 'Tahoma', sans-serif;
-    text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-    letter-spacing: 0.2em;
+.counter{
+    font-size:72px;
+    color:#00ff00;
+    text-shadow:0 0 8px rgba(0,255,0,.8);
+    letter-spacing:4px;
 }
 
-/* MESSAGE (SMALL + SCROLLABLE) */
-.message {
-    font-size: 14px;
-    color: #00ff00;
-    text-align: center;
-    font-family: 'Tahoma', sans-serif;
-    margin-top: 10px;
-    line-height: 1.5;
-    direction: rtl;
-    max-height: 80px;
-    overflow-y: auto;
-    padding: 5px;
+/* MESSAGE */
+.message{
+    font-size:18px;
+    color:#00ff00;
+    text-align:center;
+    margin-top:10px;
+    line-height:1.8;
+    max-height:70px;
+    overflow-y:auto;
+    width:100%;
 }
 
 /* TOTAL */
-.total {
-    font-size: 24px;
-    color: #00ff00;
-    margin-top: 8px;
+.total{
+    font-size:24px;
+    color:#00ff00;
+    margin-top:10px;
 }
 
 /* BUTTONS */
-.buttons {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 25px;
+.buttons{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:15px;
+    width:100%;
 }
 
-/* DEFAULT BUTTON (RESET) */
-button {
-    width: 60px;
-    height: 60px;
-    border: none;
-    border-radius: 10px;
-    background: #222;
-    color: #00ff00;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0, 255, 0, 0.7);
+/* BUTTON STYLE */
+button{
+    border:none;
+    border-radius:15px;
+    background:#222;
+    color:#00ff00;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    box-shadow:0 4px 12px rgba(0,255,0,.7);
+    transition:.2s;
 }
 
-button:hover {
-    background-color: #333;
-    transform: scale(1.05);
+button:active{
+    transform:scale(.95);
 }
 
-/* BIG MAIN BUTTON */
-#increaseBtn {
-    width: 110px;
-    height: 110px;
-    border-radius: 15px;
+/* PREV / NEXT */
+#prevBtn,
+#nextBtn{
+    width:80px;
+    height:80px;
+    font-size:32px;
 }
 
-/* SMALL RESET */
-#resetBtn {
-    width: 55px;
-    height: 55px;
-    opacity: 0.8;
+/* MAIN COUNT BUTTON */
+#increaseBtn{
+    width:130px;
+    height:130px;
+    font-size:56px;
 }
 
-/* ICONS */
-.icon {
-    font-size: 28px;
+/* RESET */
+#resetBtn{
+    width:80px;
+    height:80px;
+    font-size:28px;
 }
 
-#increaseBtn .icon {
-    font-size: 48px;
-}
+@media (max-width:480px){
 
-#resetBtn .icon {
-    font-size: 20px;
+    .counter{
+        font-size:60px;
+    }
+
+    .message{
+        font-size:16px;
+    }
+
+    #increaseBtn{
+        width:120px;
+        height:120px;
+    }
+
+    #prevBtn,
+    #nextBtn,
+    #resetBtn{
+        width:75px;
+        height:75px;
+    }
 }
 </style>
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -133,12 +151,10 @@ button:hover {
 </div>
 
 <div class="buttons">
-    <button id="increaseBtn">
-        <i class="fas fa-plus icon"></i>
-    </button>
-    <button id="resetBtn">
-        <i class="fas fa-redo icon"></i>
-    </button>
+    <button id="prevBtn">◀</button>
+    <button id="increaseBtn">+</button>
+    <button id="nextBtn">▶</button>
+    <button id="resetBtn">↺</button>
 </div>
 
 <script>
@@ -146,47 +162,81 @@ let count = 0;
 let currentMessageIndex = 0;
 
 const messages = [
-{ text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", count: 100 },
-{ text: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", count: 100 },
-{ text: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ", count: 100 },
-{ text: "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ", count: 10 },
-{ text: "رَضِيتُ بِاللَّهِ رَبًّا", count: 3 }
+    { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", count: 100 },
+    { text: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", count: 100 },
+    { text: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ", count: 100 },
+    { text: "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ", count: 10 },
+    { text: "رَضِيتُ بِاللَّهِ رَبًّا", count: 3 }
 ];
 
-const counterDisplay = document.getElementById('counter');
-const messageDisplay = document.getElementById('message');
-const totalDisplay = document.getElementById('total');
+const counterDisplay = document.getElementById("counter");
+const messageDisplay = document.getElementById("message");
+const totalDisplay = document.getElementById("total");
 
-const increaseBtn = document.getElementById('increaseBtn');
-const resetBtn = document.getElementById('resetBtn');
+const increaseBtn = document.getElementById("increaseBtn");
+const resetBtn = document.getElementById("resetBtn");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
-/* INIT */
-function updateUI() {
+function updateUI(){
     messageDisplay.textContent = messages[currentMessageIndex].text;
-    totalDisplay.textContent = "الهدف: " + messages[currentMessageIndex].count;
+    totalDisplay.textContent =
+        `الهدف: ${messages[currentMessageIndex].count}`;
 }
+
+function resetCounter(){
+    count = 0;
+    counterDisplay.textContent = "000";
+}
+
 updateUI();
 
 /* COUNT */
-increaseBtn.addEventListener('click', () => {
+increaseBtn.addEventListener("click", () => {
+
     count++;
-    counterDisplay.textContent = count.toString().padStart(3, '0');
 
-    if (count >= messages[currentMessageIndex].count) {
+    counterDisplay.textContent =
+        count.toString().padStart(3,"0");
+
+    if(count >= messages[currentMessageIndex].count){
+
         setTimeout(() => {
-            count = 0;
-            counterDisplay.textContent = "000";
 
-            currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+            currentMessageIndex =
+                (currentMessageIndex + 1) % messages.length;
+
+            resetCounter();
             updateUI();
-        }, 300);
+
+        },300);
     }
 });
 
 /* RESET */
-resetBtn.addEventListener('click', () => {
-    count = 0;
-    counterDisplay.textContent = "000";
+resetBtn.addEventListener("click", resetCounter);
+
+/* NEXT */
+nextBtn.addEventListener("click", () => {
+
+    currentMessageIndex =
+        (currentMessageIndex + 1) % messages.length;
+
+    resetCounter();
+    updateUI();
+});
+
+/* PREVIOUS */
+prevBtn.addEventListener("click", () => {
+
+    currentMessageIndex--;
+
+    if(currentMessageIndex < 0){
+        currentMessageIndex = messages.length - 1;
+    }
+
+    resetCounter();
+    updateUI();
 });
 </script>
 
